@@ -53,11 +53,17 @@ class meun(QWidget):
         self.mit.data_.connect(self.bar_set)
         self.mit.start()
     def bar_set(self,value,stats):
+        self.rad1.setEnabled(False)
+        self.rad2.setEnabled(False)
+        self.qd.setEnabled(False)
         all_stats=["下载flv视频文件%p%","下载mp4视频文件%p%","下载m4a音频文件%p%"]
         self.progressBar.setFormat(all_stats[stats])
         self.progressBar.setValue(value)
         if value==100:
             self.progressBar.reset()
+            self.rad1.setEnabled(True)
+            self.rad2.setEnabled(True)
+            self.qd.setEnabled(True)
 
 
     
