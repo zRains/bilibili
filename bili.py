@@ -2,11 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 import json
 from PyQt5.QtCore import QStringListModel,QThread,pyqtSignal
+from tr import tr
 
 class down(QThread):
-	data_=pyqtSignal(int)
-	def __init__(self,id):
+	data_=pyqtSignal(int,int)
+	def __init__(self,id,tr_no="False",tr_del="False"):
 		super().__init__()
+		self.tr_no=tr_no
+		self.tr_del=tr_del
 		url_ = "https://www.bilibili.com/video/av%s?from=search&seid=11892641008249561747"%id
 		self.headers = {
 			"Referer": "https://www.bilibili.com",
@@ -21,26 +24,41 @@ class down(QThread):
 			self.Title=link["videoData"]["title"]
 			self.urll="https://api.bilibili.com/x/player/playurl?cid=%s&avid=%s&qn=16"%(link["videoData"]["cid"],id)
 			r = requests.get(self.urll,headers=self.headers)
-			self.urll=json.loads(r.text)["data"]["durl"][0]["url"]
+			self.link2=[json.loads(r.text)["data"]["durl"][0]["url"]]
 		except:
 			data=head_js[2].text.replace("window.__playinfo__=","")
 			link=json.loads(data)["data"]
-			if not "durl" in link.keys():
-				self.urll=link["dash"]["video"][0]["baseUrl"]
-			else:
-				self.urll=link["durl"][0]["url"]
+			# if not "durl" in link.keys():
+			self.link2=[link["dash"]["video"][1]["baseUrl"],link["dash"]["audio"][1]["baseUrl"]]
+			# else:
+				# self.urll=link["durl"][0]["url"]
 			head_title=BeautifulSoup(r.text,"lxml").find_all("title")
+			#标题
 			self.Title=head_title[0].text.replace("_哔哩哔哩 (゜-゜)つロ 干杯~-bilibili","")
 	def run(self):
-		r2=requests.get(self.urll,headers=self.headers,stream=True)
-		size=int(r2.headers["Content-Length"])
-		wj=open("%s.flv"%self.Title,"wb")
-		offset = 0
-		for chunk in r2.iter_content(chunk_size=2048):
-			if not chunk: break
-			wj.seek(offset)
-			wj.write(chunk)                            
-			offset = offset + len(chunk)
-			proess = offset / int(size) * 100
-			self.data_.emit(int(proess))
+		for i in range(0,len(self.link2)):
+			r2=requests.get(self.link2[i],headers=self.headers,stream=True)
+			size=int(r2.headers["Content-Length"])
+			if  i==0:
+				if len(self.link2)==1:
+					wj=open("%s.%s"%("video","flv"),"wb")
+					stats=2
+					stats_now=0
+				else:
+					wj=open("%s.%s"%("video","mp4"),"wb")
+					stats=1
+					stats_now=1
+			else:
+				wj=open("%s.%s"%("audio","m4a"),"wb")
+				stats_now=2
+			offset = 0
+			for chunk in r2.iter_content(chunk_size=2048):
+				if not chunk: break
+				wj.seek(offset)
+				wj.write(chunk)                            
+				offset = offset + len(chunk)
+				proess = offset / int(size) * 100
+				self.data_.emit(int(proess),stats_now)
+		self.mit=tr(self.Title,stats,self.tr_no,self.tr_del)
+		self.mit.start()
 
