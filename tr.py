@@ -26,12 +26,15 @@ class tr(QThread):
                 wj.seek(offset)
                 wj.write(chunk)
                 offset = offset + len(chunk)
-        if self.tr_no=="False":
-            os.system('ffmpeg.exe -i video.mp4 -i audio.m4a -vcodec copy -acodec copy %s.mp4'%(self.title.replace("&","AND").replace("|","OR")))
-            if self.tr_del=="False":
-                os.system('del video.mp4 audio.m4a')
+        if self.stats==1:
+            if self.tr_no=="False":
+                os.system('ffmpeg.exe -i video.mp4 -i audio.m4a -vcodec copy -acodec copy temp.mp4')
+                os.rename("temp.mp4","%s.mp4"%self.title)
+                if self.tr_del=="False":
+                    os.system('del video.mp4 audio.m4a')
         else:
             if self.tr_no=="False":
-                os.system('ffmpeg -i video.flv %s.mp4'%(self.title.replace("&","AND").replace("|","OR")))
+                os.system('ffmpeg -i video.flv temp.mp4')
+                os.rename("temp.mp4","%s.mp4"%self.title)
                 if self.tr_del=="False":
                     os.system('del video.flv')
