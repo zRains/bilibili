@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -61,4 +64,6 @@ class down(QThread):
 				self.data_.emit(int(proess),stats_now)
 		self.mit=tr(self.Title,stats,self.tr_no,self.tr_del)
 		self.mit.start()
+
+
 
