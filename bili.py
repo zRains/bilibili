@@ -69,4 +69,4 @@ class down(QThread):
 				proess = offset / int(size) * 100
 				self.data_.emit(int(proess),stats_now)
 		self.mit=tr(self.Title,stats,self.tr_no,self.tr_del)
-		self.mit.start()
+		self.mit.start() 
