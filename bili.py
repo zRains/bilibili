@@ -9,32 +9,38 @@ from tr import tr
 
 class down(QThread):
 	data_=pyqtSignal(int,int)
-	def __init__(self,id,tr_no="False",tr_del="False"):
+	def __init__(self,id,tr_no="False",tr_del="False",which_="True"):
 		super().__init__()
 		self.tr_no=tr_no
 		self.tr_del=tr_del
-		url_ = "https://www.bilibili.com/video/av%s?from=search&seid=11892641008249561747"%id
+		if which_=="True":
+			url_ = "https://www.bilibili.com/video/av%s?from=search&seid=11892641008249561747"%id
+			self.demo=2
+		else:
+			url_ = "https://www.bilibili.com/bangumi/play/ep%s"%id
+			self.demo=5
 		self.headers = {
 			"Referer": "https://www.bilibili.com",
 			"User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
+			"Cookie": "CURRENT_FNVAL=16"
 		}
 		r = requests.get(url_,headers=self.headers)
 		head_js=BeautifulSoup(r.text,"lxml").find_all("script")
 		try:
 			#这里没有用api获取cid，我用返回数据提取出了cid
-			data=head_js[2].text.replace("window.__INITIAL_STATE__=","").replace(";(function(){var s;(s=document.currentScript||document.scripts[document.scripts.length-1]).parentNode.removeChild(s);}());","")
+			data=head_js[self.demo].text.replace("window.__INITIAL_STATE__=","").replace(";(function(){var s;(s=document.currentScript||document.scripts[document.scripts.length-1]).parentNode.removeChild(s);}());","")
 			link=json.loads(data)
 			self.Title=link["videoData"]["title"]
 			self.urll="https://api.bilibili.com/x/player/playurl?cid=%s&avid=%s&qn=16"%(link["videoData"]["cid"],id)
 			r = requests.get(self.urll,headers=self.headers)
 			self.link2=[json.loads(r.text)["data"]["durl"][0]["url"]]
 		except:
-			data=head_js[2].text.replace("window.__playinfo__=","")
+			data=head_js[self.demo].text.replace("window.__playinfo__=","")
 			link=json.loads(data)["data"]
-			# if not "durl" in link.keys():
-			self.link2=[link["dash"]["video"][1]["baseUrl"],link["dash"]["audio"][1]["baseUrl"]]
-			# else:
-				# self.urll=link["durl"][0]["url"]
+			if not "durl" in link.keys():
+				self.link2=[link["dash"]["video"][0]["baseUrl"],link["dash"]["audio"][0]["baseUrl"]]
+			else:
+				self.link2=[link["durl"][0]["url"]]
 			head_title=BeautifulSoup(r.text,"lxml").find_all("title")
 			#标题
 			self.Title=head_title[0].text.replace("_哔哩哔哩 (゜-゜)つロ 干杯~-bilibili","")
@@ -64,6 +70,3 @@ class down(QThread):
 				self.data_.emit(int(proess),stats_now)
 		self.mit=tr(self.Title,stats,self.tr_no,self.tr_del)
 		self.mit.start()
-
-
-
