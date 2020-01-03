@@ -28,7 +28,7 @@ class set_ui():
         self.verticalLayout.addWidget(self.qd)
         self.qx = QtWidgets.QPushButton("退出",self)
         self.verticalLayout.addWidget(self.qx)
-        self.get_cover = QtWidgets.QPushButton("下载封面(番剧下无效)",self)
+        self.get_cover = QtWidgets.QPushButton("下载封面",self)
         self.verticalLayout.addWidget(self.get_cover)
         self.groupBox_2 = QtWidgets.QGroupBox("清晰度选择",self)
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.groupBox_2)
